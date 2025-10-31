@@ -30,8 +30,8 @@ resource "aws_s3_bucket_versioning" "this" {
   }
 }
 
-# S3 Bucket EventBridge Notification
-resource "aws_s3_bucket_notification" "evenbridge" {
+# S3 Bucket EventBridge Notification on all events to default bus
+resource "aws_s3_bucket_notification" "eventbridge" {
   bucket      = aws_s3_bucket.bucket.id
   eventbridge = true
 
