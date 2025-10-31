@@ -3,6 +3,10 @@ name: Deploy Infrastructure
 on:
     workflow_dispatch:
 
+permissions:
+    contents: read
+    id-token: write
+
 jobs:
     deploy-infra:
         name: Deploy Infrastructure with Terraform
