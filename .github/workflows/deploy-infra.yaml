@@ -1,0 +1,46 @@
+name: Deploy Infrastructure
+
+on:
+    workflow_dispatch:
+
+jobs:
+    deploy-infra:
+        name: Deploy Infrastructure with Terraform
+        runs-on: ubuntu-latest
+        env:
+            AWS_REGION: us-east-1
+            STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Configure AWS Credentials
+              uses:  aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+                role-session-name: GitHubActionsSession
+                aws-region: ${{ env.AWS_REGION }}
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v2
+              with:
+                  terraform_version: 1.7.0
+
+            - name: Terraform Init
+              run: |
+                terraform init \
+                  -backend-config="bucket=${{ env.STATE_BUCKET }}"
+
+            - name: Terraform format check
+              run: terraform fmt --check -recursive
+
+            - name: Terraform Validate
+              run: terraform validate
+
+            - name: Terraform Plan
+              run: |
+               terraform plan -out=tfplan \
+                -var="bucket_name=${{secrets.BUCKET_NAME}}"
+
+            - name: Terraform Apply
+              run: terraform apply -auto-approve tfplan
